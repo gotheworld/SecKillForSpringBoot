@@ -31,6 +31,9 @@ public class SeckillController {
 	@Autowired
 	private SeckillService seckillService;
 
+	/**
+	   URL:http://localhost:8080/seckill/list
+	 */
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	public String list(Model model) {
 		// 获取列表页
@@ -40,6 +43,9 @@ public class SeckillController {
 		return "list";// WEB-INF/jsp/"list".jsp
 	}
 
+	/**
+	 URL:http://localhost:8080/seckill/1000/detail
+	 */
 	@RequestMapping(value = "/{seckillId}/detail", method = RequestMethod.GET)
 	public String detail(@PathVariable("seckillId") Long seckillId, Model model) {
 		if (seckillId == null) {

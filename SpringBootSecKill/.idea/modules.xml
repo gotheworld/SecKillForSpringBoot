@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/SpringBootSecKill.iml" filepath="$PROJECT_DIR$/SpringBootSecKill.iml" />
+      <module fileurl="file://$PROJECT_DIR$/com.spring.artifactid.iml" filepath="$PROJECT_DIR$/com.spring.artifactid.iml" />
     </modules>
   </component>
 </project>

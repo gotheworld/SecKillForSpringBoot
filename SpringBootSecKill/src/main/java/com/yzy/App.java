@@ -1,6 +1,5 @@
 package com.yzy;
 
-import com.yzy.controller.MainController;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
