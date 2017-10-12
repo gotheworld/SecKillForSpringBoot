@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import com.yzy.dao.SeckillDao;
 import com.yzy.dao.SuccessKilledDao;
+import com.yzy.dao.cache.RedisDao;
 import com.yzy.dto.Exposer;
 import com.yzy.dto.SeckillExecution;
 import com.yzy.entity.Seckill;
@@ -15,6 +16,7 @@ import com.yzy.exception.RepeatKillException;
 import com.yzy.exception.SeckillCloseException;
 import com.yzy.exception.SeckillException;
 import com.yzy.service.SeckillService;
+import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +37,8 @@ public class SeckillServiceImpl implements SeckillService {
 	@Autowired
 	private SuccessKilledDao successKilledDao;
 
-	//@Autowired
-	//private RedisDao redisDao;
+	@Autowired
+	private RedisDao redisDao;
 
 	// md5盐值字符串，用于混淆MD5
 	private final String slat = "skdfjksjdf7787%^%^%^FSKJFK*(&&%^%&^8DF8^%^^*7hFJDHFJ";
@@ -57,18 +59,52 @@ public class SeckillServiceImpl implements SeckillService {
 		return md5;
 	}
 
+	/**
+	 * 输出 : 每一个秒杀商品在前台页面都会有一个秒杀的链接
+	 *
+	 * 在秒杀开始之前这个链接显示距离秒杀的时间剩余,当秒杀开始以后显示秒杀的URL
+	 *
+	 * 该URL需要做  加密(防止URL在秒杀之前被猜到) , 防重放 ,
+	 *
+	 * @param seckillId
+	 * @return
+     */
 	@Override
 	public Exposer exportSeckillUrl(long seckillId) {
-		 return  null;
-	}
 
-	@Override
-	@Transactional
+		// 优化点：缓存优化：超时的基础上维护一致性
+		// 1.访问redis
+		Seckill seckill = redisDao.getSeckill(seckillId);
+		if (seckill == null) {
+			// 2.访问数据库
+			seckill = seckillDao.queryById(seckillId);
+			if (seckill == null) {
+				return new Exposer(false, seckillId);
+			} else {
+				// 3.访问redis
+				redisDao.putSeckill(seckill);
+			}
+		}
+		if (seckill == null) {
+			return new Exposer(false, seckillId);
+		}
+		Date startTime = seckill.getStartTime();
+		Date endTime = seckill.getEndTime();
+		// 系统当前时间
+		Date nowTime = new Date();
+		if (nowTime.getTime() < startTime.getTime() || nowTime.getTime() > endTime.getTime()) {
+			return new Exposer(false, seckillId, nowTime.getTime(), startTime.getTime(), endTime.getTime());
+		}
+		// 转化特定字符串的过程，不可逆
+		String md5 = getMD5(seckillId);
+		return new Exposer(true, md5, seckillId);
+	}
 	/**
 	 * 使用注解控制事务方法的优点： 1.开发团队达成一致约定，明确标注事务方法的编程风格
 	 * 2.保证事务方法的执行时间尽可能短，不要穿插其他网络操作，RPC/HTTP请求或者剥离到事务方法外部
 	 * 3.不是所有的方法都需要事务，如只有一条修改操作，只读操作不需要事务控制
 	 */
+	@Transactional
 	public SeckillExecution executeSeckill(long seckillId, long userPhone, String md5)
 			throws SeckillException, RepeatKillException, SeckillCloseException {
 		if (md5 == null || !md5.equals(getMD5(seckillId))) {
@@ -121,11 +157,7 @@ public class SeckillServiceImpl implements SeckillService {
 		try {
 			seckillDao.killByProcedure(map);
 			// 获取result
-			//int result = MapUtils.getInteger(map, "result", -2);
-			//int result = map.get("result");
-
-
-			int result = -999;
+			int result = MapUtils.getInteger(map, "result", -2);
 
 			if (result == 1) {
 				SuccessKilled sk = successKilledDao.queryByIdWithSeckill(seckillId, userPhone);
