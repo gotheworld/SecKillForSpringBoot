@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import com.yzy.dao.SeckillDao;
 import com.yzy.dao.SuccessKilledDao;
-import com.yzy.dao.cache.RedisDao;
+import com.yzy.dao.RedisDao;
 import com.yzy.dto.Exposer;
 import com.yzy.dto.SeckillExecution;
 import com.yzy.entity.Seckill;
@@ -37,8 +37,8 @@ public class SeckillServiceImpl implements SeckillService {
 	@Autowired
 	private SuccessKilledDao successKilledDao;
 
-	@Autowired
-	private RedisDao redisDao;
+//	@Autowired
+	private RedisDao redisDao = new RedisDao("",1111);
 
 	// md5盐值字符串，用于混淆MD5
 	private final String slat = "skdfjksjdf7787%^%^%^FSKJFK*(&&%^%&^8DF8^%^^*7hFJDHFJ";

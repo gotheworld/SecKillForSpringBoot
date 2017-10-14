@@ -1,4 +1,4 @@
-package com.yzy.dao.cache;
+package com.yzy.dao;
 import com.yzy.entity.Seckill;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

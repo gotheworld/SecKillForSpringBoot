@@ -33,12 +33,25 @@ public class SeckillController {
 
 	/**
 	   URL:http://localhost:8080/seckill/list
+
+
+	 MyBatis读取MySQL的datetime字段, 结果总是null
+
+	 因为你数据库中为create_time,而pojo中是createTime,这两个字段是不一样的,而你没有给出orm规则的情况下,
+	 ibatis的默认处理规则是只有数据库字段与pojo字段完全一样才orm的
+
+     那为啥ftl中为啥create_time就报错为null
+	 <td>${sk.createTime?datetime}</td>
+
 	 */
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	public String list(Model model) {
 		// 获取列表页
 		List<Seckill> list = seckillService.getSeckillList();
 		model.addAttribute("list", list);
+
+		System.out.println("list="+list.get(1));
+
 		// list.jsp + model = ModelAndView
 		return "list";// WEB-INF/jsp/"list".jsp
 	}

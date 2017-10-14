@@ -26,11 +26,17 @@
 					<tbody>
 						<#list list as sk>
                               <tr>
-                                    <td>${sk.name}</td>
-                                    <td>${sk.number}</td>
-                                    <td>
-                                        <a class="btn btn-info" href="/seckill/${sk.seckillId}/detail" target="_blank">link</a>
-                                    </td>
+                                      <td>${sk.name}</td>
+                                      <td>${sk.number}</td>
+                                      <td>${sk.startTime?datetime}</td>
+                                      <td>${sk.endTime?datetime}</td>
+                                      <td>${sk.createTime?datetime}</td>
+
+									  <td>
+										  <a class="btn btn-info" href="seckill/${sk.seckillId}/detail" target="_blank">
+											  link
+										  </a>
+									  </td>
                      			</tr>
                         </#list>
 					</tbody>

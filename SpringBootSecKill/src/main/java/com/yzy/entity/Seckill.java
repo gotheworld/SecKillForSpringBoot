@@ -14,11 +14,11 @@ public class Seckill {
 
 	private int number;
 
-	private Date startTime;
+	private Date start_time;
 
-	private Date endTime;
+	private Date end_time;
 
-	private Date createTime;
+	private Date create_time;
 
 	public long getSeckillId() {
 		return seckillId;
@@ -45,33 +45,33 @@ public class Seckill {
 	}
 
 	public Date getStartTime() {
-		return startTime;
+		return start_time;
 	}
 
 	public void setStartTime(Date startTime) {
-		this.startTime = startTime;
+		this.start_time = start_time;
 	}
 
 	public Date getEndTime() {
-		return endTime;
+		return end_time;
 	}
 
 	public void setEndTime(Date endTime) {
-		this.endTime = endTime;
+		this.end_time = endTime;
 	}
 
 	public Date getCreateTime() {
-		return createTime;
+		return create_time;
 	}
 
 	public void setCreateTime(Date createTime) {
-		this.createTime = createTime;
+		this.create_time = createTime;
 	}
 
 	@Override
 	public String toString() {
-		return "Seckill [seckillId=" + seckillId + ", name=" + name + ", number=" + number + ", startTime=" + startTime
-				+ ", endTime=" + endTime + ", createTime=" + createTime + "]";
+		return "Seckill [seckillId=" + seckillId + ", name=" + name + ", number=" + number + ", startTime=" + start_time
+				+ ", endTime=" + end_time + ", createTime=" + create_time + "]";
 	}
 
 }
