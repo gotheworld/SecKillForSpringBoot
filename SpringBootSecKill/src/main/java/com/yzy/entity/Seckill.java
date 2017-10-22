@@ -8,7 +8,7 @@ import java.util.Date;
 
 public class Seckill {
 
-	private long seckillId;
+	private long seckill_id;
 
 	private String name;
 
@@ -16,16 +16,46 @@ public class Seckill {
 
 	private Date start_time;
 
+	private long startTimeStamp;//数据库中并没有该字段,时间戳,毫秒数,为了前端好处理不用处理日期转时间戳
+
 	private Date end_time;
+
+	private long endTimeStamp;
 
 	private Date create_time;
 
+	private long createTimeStamp;//
+
+	public long getEndTimeStamp() {
+		return end_time.getTime();
+	}
+
+	public void setEndTimeStamp(long endTimeStamp) {
+		this.endTimeStamp = endTimeStamp;
+	}
+
+	public long getStartTimeStamp() {
+		return start_time.getTime();
+	}
+
+	public void setStartTimeStamp(long startTimeStamp) {
+		this.startTimeStamp = startTimeStamp;
+	}
+
+	public long getCreateTimeStamp() {
+		return create_time.getTime();
+	}
+
+	public void setCreateTimeStamp(long createTimeStamp) {
+		this.createTimeStamp = createTimeStamp;
+	}
+
 	public long getSeckillId() {
-		return seckillId;
+		return seckill_id;
 	}
 
 	public void setSeckillId(long seckillId) {
-		this.seckillId = seckillId;
+		this.seckill_id = seckillId;
 	}
 
 	public String getName() {
@@ -70,7 +100,7 @@ public class Seckill {
 
 	@Override
 	public String toString() {
-		return "Seckill [seckillId=" + seckillId + ", name=" + name + ", number=" + number + ", startTime=" + start_time
+		return "Seckill [seckillId=" + seckill_id + ", name=" + name + ", number=" + number + ", startTime=" + start_time
 				+ ", endTime=" + end_time + ", createTime=" + create_time + "]";
 	}
 
