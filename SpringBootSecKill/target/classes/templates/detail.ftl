@@ -201,7 +201,6 @@
                     var startTime = params['startTime'];
                     var endTime = params['endTime'];
                     var seckillId = params['seckillId'];
-					alert(seckill.URL.now());
                     $.get(seckill.URL.now(), {}, function(result) {
                         if (result && result['success']) {
                             var nowTime = result['data'];

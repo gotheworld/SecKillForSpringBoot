@@ -73,7 +73,11 @@ public class SeckillController {
 		return "detail";
 	}
 
-	// ajax json
+	/***
+	 *ajax json  返回抢购商品的信息,有了这个信息才能够调用下面的抢购接口
+	 * @param seckillId
+	 * @return
+     */
 	@RequestMapping(value = "/{seckillId}/exposer", method = RequestMethod.POST, produces = {
 			"application/json; charset=utf-8" })
 	@ResponseBody
@@ -89,6 +93,14 @@ public class SeckillController {
 		return result;
 	}
 
+	/**
+	 * 执行秒杀接口   调用存储过程的版本
+	 * @param seckillId
+	 * @param md5
+	 * @param phone
+     * @return
+     */
+
 	@RequestMapping(value = "/{seckillId}/{md5}/execution", method = RequestMethod.POST, produces = {
 			"application/json; charset=utf-8" })
 	@ResponseBody
@@ -100,7 +112,10 @@ public class SeckillController {
 		}
 		try {
 			// 存储过程调用
-			SeckillExecution execution = seckillService.executeSeckillProcedure(seckillId, phone, md5);
+			//SeckillExecution execution = seckillService.executeSeckillProcedure(seckillId, phone, md5);
+
+			SeckillExecution execution = seckillService.executeSeckill(seckillId,phone,md5);
+
 			return new SeckillResult<SeckillExecution>(true, execution);
 		} catch (RepeatKillException e) {
 			SeckillExecution execution = new SeckillExecution(seckillId, SeckillStateEnum.REPEAT_KILL);
@@ -110,10 +125,16 @@ public class SeckillController {
 			return new SeckillResult<SeckillExecution>(true, execution);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
+			e.printStackTrace();
 			SeckillExecution execution = new SeckillExecution(seckillId, SeckillStateEnum.INNER_ERROR);
 			return new SeckillResult<SeckillExecution>(true, execution);
 		}
 	}
+
+	/**
+	 * 返回当前系统时间
+	 * @return
+     */
 
 	@RequestMapping(value = "/time/now", method = RequestMethod.GET)
 	@ResponseBody
