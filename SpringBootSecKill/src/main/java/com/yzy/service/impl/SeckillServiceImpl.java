@@ -38,7 +38,7 @@ public class SeckillServiceImpl implements SeckillService {
 	private SuccessKilledDao successKilledDao;
 
 //	@Autowired
-	private RedisDao redisDao = new RedisDao("",1111);
+	private RedisDao redisDao = new RedisDao("127.0.0.1",6379);
 
 	// md5盐值字符串，用于混淆MD5
 	private final String slat = "skdfjksjdf7787%^%^%^FSKJFK*(&&%^%&^8DF8^%^^*7hFJDHFJ";

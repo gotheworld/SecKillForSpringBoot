@@ -27,6 +27,7 @@ public class RedisDao {
 		try {
 			Jedis jedis = jedisPool.getResource();
 			try {
+				//>>>>> get seckill:1003
 				String key = "seckill:" + seckillId;
 				// 并没有实现内部序列化操作
 				// get -> byte[] -> 反序列化 -> object[Seckill]
@@ -57,7 +58,7 @@ public class RedisDao {
 				byte[] bytes = ProtostuffIOUtil.toByteArray(seckill, schema,
 						LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE));
 				// 超时缓存
-				int timeout = 60 * 60;
+				int timeout = 60 * 60;  //一个小时
 				String result = jedis.setex(key.getBytes(), timeout, bytes);
 				return result;
 			} finally {
@@ -67,6 +68,35 @@ public class RedisDao {
 			logger.error(e.getMessage(), e);
 		}
 		return null;
+	}
+
+
+	public void putString(String key,String value){
+		try {
+			Jedis jedis = jedisPool.getResource();
+			try {
+				jedis.append(key,value);
+			}finally {
+				jedis.close();
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
+	}
+
+	public String getString(String key){
+		String val = null;
+		try {
+			Jedis jedis = jedisPool.getResource();
+			try {
+				val = jedis.get(key);
+			}finally {
+				jedis.close();
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
+		return val;
 	}
 
 }

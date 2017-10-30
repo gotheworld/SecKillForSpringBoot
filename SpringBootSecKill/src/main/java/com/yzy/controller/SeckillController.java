@@ -74,6 +74,9 @@ public class SeckillController {
 	}
 
 	/***
+	 *
+	 * 进入详情页的时候,如果商品已经开始了秒杀的活动那么需要返回 秒杀地址
+	 *
 	 *ajax json  返回抢购商品的信息,有了这个信息才能够调用下面的抢购接口
 	 * @param seckillId
 	 * @return
