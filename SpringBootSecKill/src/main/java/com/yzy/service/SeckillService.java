@@ -67,5 +67,23 @@ public interface SeckillService {
 	 */
 	SeckillExecution executeSeckillProcedure(long seckillId, long userPhone, String md5)
 			throws SeckillException, RepeatKillException, SeckillCloseException;
+	
+	/**
+	 * 秒杀开始之前把数据库中的库存信息写入redis
+	 */
+	void syncRedisFromDB();
+	
+	/**
+	 * 秒杀的时候通过redis的原子操作把库存信息减1，把秒杀的结果写入rabbitmq
+	 * 
+	 * 秒杀结束以后把redis的库存信息和mq的订单信息写入mysql
+	 * 
+	 * @param seckillId
+	 * @param userPhone
+	 * @param md5
+	 * @return
+	 */
+    SeckillExecution executeSeckillByRedis(long seckillId, long userPhone, String md5);
 
+	void syncDBFromRedis();
 }

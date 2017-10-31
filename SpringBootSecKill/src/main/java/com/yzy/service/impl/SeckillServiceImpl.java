@@ -170,5 +170,37 @@ public class SeckillServiceImpl implements SeckillService {
 			return new SeckillExecution(seckillId, SeckillStateEnum.INNER_ERROR);
 		}
 	}
+	
+	
+
+	@Override
+	public void syncRedisFromDB() {
+		
+		List<Seckill> list = getSeckillList();
+		for(Seckill seckill : list){
+			redisDao.putSeckill(seckill);
+		}
+	}
+
+	@Override
+	public SeckillExecution executeSeckillByRedis(long seckillId, long userPhone, String md5) {
+		//1.redis中减库存
+		
+		//2.把秒杀的结果写入mq
+		//3.消费者线程去消费mq中的数据，更新到mysql的秒杀结果表中
+		return null;
+	}
+
+	@Override
+	public void syncDBFromRedis() {
+		List<Seckill> list = getSeckillList();
+		for(Seckill seckill : list){
+			Seckill cacheSeckill = redisDao.getSeckill(seckill.getSeckillId());
+			if(cacheSeckill != null){
+				//把redis中的库存信息写回mysql
+				seckillDao.updateNumber(seckill.getSeckillId(), cacheSeckill.getNumber());
+			}
+		}
+	}
 
 }

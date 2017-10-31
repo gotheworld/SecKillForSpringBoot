@@ -45,5 +45,12 @@ public interface SeckillDao {
 	 * @param paramMap
 	 */
 	void killByProcedure(Map<String, Object> paramMap);
+	
+	/**
+	 * 
+	 * @param seckillId
+	 * @param num   最新的库存信息
+	 */
+	void updateNumber(@Param("seckillId") long seckillId, @Param("num") int num);
 
 }

@@ -69,6 +69,25 @@ public class RedisDao {
 		}
 		return null;
 	}
+	
+	/**
+	 * 更新seckill的缓存的库存信息
+	 * @param seckill
+	 */
+	public void updateSeckillNum(Seckill seckill){
+		try {
+			Jedis jedis = jedisPool.getResource();
+			try {
+				
+				
+				
+			}finally {
+				jedis.close();
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
+	}
 
 
 	public void putString(String key,String value){
@@ -98,5 +117,7 @@ public class RedisDao {
 		}
 		return val;
 	}
+	
+	
 
 }
