@@ -13,7 +13,6 @@ import java.util.List;
 /**
  * 业务接口：站在"使用者"角度设计接口 三个方面：方法定义粒度，参数，返回类型（return 类型/异常）
  * 
- * @author 李奕锋
  */
 public interface SeckillService {
 
@@ -31,6 +30,12 @@ public interface SeckillService {
 	 * @return
 	 */
 	Seckill getById(long seckillId);
+	
+
+	/**
+	 * 获取剩余库存
+	 */
+	void updateNumber(long seckillId, int num);
 
 	/**
 	 * 秒杀开启时输出秒杀接口地址，否则输出系统时间和秒杀时间
@@ -68,22 +73,8 @@ public interface SeckillService {
 	SeckillExecution executeSeckillProcedure(long seckillId, long userPhone, String md5)
 			throws SeckillException, RepeatKillException, SeckillCloseException;
 	
-	/**
-	 * 秒杀开始之前把数据库中的库存信息写入redis
-	 */
-	void syncRedisFromDB();
 	
-	/**
-	 * 秒杀的时候通过redis的原子操作把库存信息减1，把秒杀的结果写入rabbitmq
-	 * 
-	 * 秒杀结束以后把redis的库存信息和mq的订单信息写入mysql
-	 * 
-	 * @param seckillId
-	 * @param userPhone
-	 * @param md5
-	 * @return
-	 */
-    SeckillExecution executeSeckillByRedis(long seckillId, long userPhone, String md5);
-
-	void syncDBFromRedis();
+	SeckillExecution executeSeckillByRedis(long seckillId, long userPhone, String md5)
+			throws SeckillException, RepeatKillException, SeckillCloseException;
+	
 }

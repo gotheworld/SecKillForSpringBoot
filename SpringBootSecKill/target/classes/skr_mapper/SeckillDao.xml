@@ -3,9 +3,7 @@
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.yzy.dao.SeckillDao">
-	<!-- 目的：为dao接口方法提供sql语句配置 -->
 	<update id="reduceNumber">
-		<!-- 具体的sql -->
 		UPDATE seckill
 		SET number = number - 1
 		WHERE
@@ -13,6 +11,13 @@
 		AND start_time <![CDATA[ <= ]]> #{killTime}
 		AND end_time >= #{killTime}
 		AND number > 0
+	</update>
+	
+	<update id="updateNumber">
+		UPDATE seckill
+		SET number = #{num}
+		WHERE
+			seckill_id = #{seckillId}
 	</update>
 	
 	<select id="queryById" resultType="com.yzy.entity.Seckill" parameterType="long">

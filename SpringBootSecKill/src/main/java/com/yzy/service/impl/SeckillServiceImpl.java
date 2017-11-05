@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import com.yzy.dao.SeckillDao;
 import com.yzy.dao.SuccessKilledDao;
-import com.yzy.dao.RedisDao;
 import com.yzy.dto.Exposer;
 import com.yzy.dto.SeckillExecution;
 import com.yzy.entity.Seckill;
@@ -16,6 +15,9 @@ import com.yzy.exception.RepeatKillException;
 import com.yzy.exception.SeckillCloseException;
 import com.yzy.exception.SeckillException;
 import com.yzy.service.SeckillService;
+import com.yzy.utils.RabbitMqUtil;
+import com.yzy.utils.RedisUtil;
+
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +40,10 @@ public class SeckillServiceImpl implements SeckillService {
 	private SuccessKilledDao successKilledDao;
 
 //	@Autowired
-	private RedisDao redisDao = new RedisDao("127.0.0.1",6379);
+	private RedisUtil redisDao = new RedisUtil("127.0.0.1",6379);
+	
+	@Autowired
+	private RabbitMqUtil rabbitMqUtil;
 
 	// md5盐值字符串，用于混淆MD5
 	private final String slat = "skdfjksjdf7787%^%^%^FSKJFK*(&&%^%&^8DF8^%^^*7hFJDHFJ";
@@ -58,6 +63,14 @@ public class SeckillServiceImpl implements SeckillService {
 		String md5 = DigestUtils.md5DigestAsHex(base.getBytes());
 		return md5;
 	}
+	
+
+
+	@Override
+	public void updateNumber(long seckillId,int num) {
+		seckillDao.updateNumber(seckillId, num);
+	}
+	
 
 	/**
 	 * 输出 : 每一个秒杀商品在前台页面都会有一个秒杀的链接
@@ -85,14 +98,12 @@ public class SeckillServiceImpl implements SeckillService {
 				redisDao.putSeckill(seckill);
 			}
 		}
-		if (seckill == null) {
-			return new Exposer(false, seckillId);
-		}
 		Date startTime = seckill.getStartTime();
 		Date endTime = seckill.getEndTime();
 		// 系统当前时间
 		Date nowTime = new Date();
 		if (nowTime.getTime() < startTime.getTime() || nowTime.getTime() > endTime.getTime()) {
+			//秒杀还没有开始
 			return new Exposer(false, seckillId, nowTime.getTime(), startTime.getTime(), endTime.getTime());
 		}
 		// 转化特定字符串的过程，不可逆
@@ -170,37 +181,39 @@ public class SeckillServiceImpl implements SeckillService {
 			return new SeckillExecution(seckillId, SeckillStateEnum.INNER_ERROR);
 		}
 	}
-	
-	
 
+	/**
+	 * 
+	 * 架构流程：
+	 *  0.定时任务,秒杀开始之前同步mysql库存信息到redis
+	 *  1.redis中减库存
+		2.把秒杀的结果写入mq 
+		3.消费者线程去消费mq中的数据，更新到mysql的秒杀结果表中
+		4.redis中的库存信息写会mysql
+		 
+	 * 可能遇到的问题：
+	 * 1.redis减库存的分布式锁【zk分布式锁】
+	 * 2.mq记录购买行为，如何保证生产者投递消息成功（AutoAck）
+	 * 3.事务问题：redis减库存成功了，但是mq记录购买行为失败怎么办？【回滚redis的库存】
+	 * 4.reids库存写会mysql成功了，但是消费者没有消费mq的购买记录怎么办？【消息如何保证被消费者消费？】
+	 * 
+	 * 
+	 */
+   // 其实redis本事是不会存在并发问题的，因为他是单进程的，
+//	再多的command都是one by one执行的。我们使用的时候，可能会出现并发问题，比如get和set这一对。
+	//解决方案：
+	//1.使用incr、decr单个命令取代get set两个命令
+	//2.使用jdk5 lock，syncnized
+	//3.SETNX 分布式锁(有多个机器同时运行 抢购服务的时候)
 	@Override
-	public void syncRedisFromDB() {
+	public SeckillExecution executeSeckillByRedis(long seckillId, long userPhone, String md5)
+			throws SeckillException, RepeatKillException, SeckillCloseException {
 		
-		List<Seckill> list = getSeckillList();
-		for(Seckill seckill : list){
-			redisDao.putSeckill(seckill);
-		}
-	}
-
-	@Override
-	public SeckillExecution executeSeckillByRedis(long seckillId, long userPhone, String md5) {
-		//1.redis中减库存
+		//这个地方要加上分布式锁,redis减库存有可能失败，可能库存已经为0了，可能某一个userPhone重复秒杀等
+		redisDao.executeSeckillByRedis(seckillId, userPhone, md5);
 		
-		//2.把秒杀的结果写入mq
-		//3.消费者线程去消费mq中的数据，更新到mysql的秒杀结果表中
+		rabbitMqUtil.produceMessage();
 		return null;
-	}
-
-	@Override
-	public void syncDBFromRedis() {
-		List<Seckill> list = getSeckillList();
-		for(Seckill seckill : list){
-			Seckill cacheSeckill = redisDao.getSeckill(seckill.getSeckillId());
-			if(cacheSeckill != null){
-				//把redis中的库存信息写回mysql
-				seckillDao.updateNumber(seckill.getSeckillId(), cacheSeckill.getNumber());
-			}
-		}
 	}
 
 }

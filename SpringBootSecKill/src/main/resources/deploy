@@ -1,0 +1,15 @@
+1.部署mysql数据
+
+2.启动redis    
+ ./src/redis-server
+ 
+3.启动zk      
+  sh /bin/ZkServer start ../conf/zoo.cfg
+  
+4.启动rabbitmq ：   
+./rabbitmq-plugins enable rabbitmq_management
+./rabbitmq-server
+通过浏览器打开http://localhost:15672/   用户名和密码 是 guest／guest
+
+
+5.相关URL
