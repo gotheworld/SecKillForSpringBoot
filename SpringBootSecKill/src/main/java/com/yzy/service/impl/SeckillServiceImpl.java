@@ -17,10 +17,12 @@ import com.yzy.exception.SeckillException;
 import com.yzy.service.SeckillService;
 import com.yzy.utils.RabbitMqUtil;
 import com.yzy.utils.RedisUtil;
+import com.yzy.utils.SuccessKilledMessage;
 
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,7 +45,7 @@ public class SeckillServiceImpl implements SeckillService {
 	private RedisUtil redisDao = new RedisUtil("127.0.0.1",6379);
 	
 	@Autowired
-	private RabbitMqUtil rabbitMqUtil;
+	private RabbitTemplate rabbitTemplate;
 
 	// md5盐值字符串，用于混淆MD5
 	private final String slat = "skdfjksjdf7787%^%^%^FSKJFK*(&&%^%&^8DF8^%^^*7hFJDHFJ";
@@ -208,11 +210,14 @@ public class SeckillServiceImpl implements SeckillService {
 	@Override
 	public SeckillExecution executeSeckillByRedis(long seckillId, long userPhone, String md5)
 			throws SeckillException, RepeatKillException, SeckillCloseException {
-		
+		//重复秒杀怎么判断？？？？？？
+		//redis减库存成功，发送消息失败怎么办？redis回滚吗？
 		//这个地方要加上分布式锁,redis减库存有可能失败，可能库存已经为0了，可能某一个userPhone重复秒杀等
 		redisDao.executeSeckillByRedis(seckillId, userPhone, md5);
 		
-		rabbitMqUtil.produceMessage();
+		int number = redisDao.getSeckill(seckillId).getNumber();//最新的库存信息
+		
+		rabbitTemplate.send(new SuccessKilledMessage(body, messageProperties));
 		return null;
 	}
 

@@ -93,28 +93,12 @@ public class RedisUtil {
 		}
 	}
 	
-	/**
-	 * 秒杀结束，把库存信息落地到mysql
-	 */
-	public void syncSeckillListFromRedis2Mysql(){
-		List<Seckill> list = mSeckillService.getSeckillList();
-		for(Seckill seckill : list){
-			Seckill cacheSeckill = getSeckill(seckill.getSeckillId());
-			if(cacheSeckill != null){
-				//把redis中的库存信息写回mysql
-				mSeckillService.updateNumber(seckill.getSeckillId(), cacheSeckill.getNumber());
-				
-			}
-		}
-	}
-
-	
 	public  SeckillExecution executeSeckillByRedis(long seckillId, long userPhone, String md5) {
 
 		Seckill seckill = getSeckill(seckillId);
 		int num = seckill.getNumber();
 	
-		if(num -1 >=0 ){
+		if(num -1 >= 0 ){
 			num = num - 1;
 			seckill.setNumber(num);//减库存
 			putSeckill(seckill);
