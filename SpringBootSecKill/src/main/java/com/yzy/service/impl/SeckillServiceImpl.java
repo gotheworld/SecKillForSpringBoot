@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+
 import com.yzy.dao.SeckillDao;
 import com.yzy.dao.SuccessKilledDao;
 import com.yzy.dto.Exposer;
@@ -15,9 +17,9 @@ import com.yzy.exception.RepeatKillException;
 import com.yzy.exception.SeckillCloseException;
 import com.yzy.exception.SeckillException;
 import com.yzy.service.SeckillService;
-import com.yzy.utils.RabbitMqUtil;
 import com.yzy.utils.RedisUtil;
 import com.yzy.utils.SuccessKilledMessage;
+import com.yzy.utils.ZookeeperLock;
 
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
@@ -207,17 +209,29 @@ public class SeckillServiceImpl implements SeckillService {
 	//1.使用incr、decr单个命令取代get set两个命令
 	//2.使用jdk5 lock，syncnized
 	//3.SETNX 分布式锁(有多个机器同时运行 抢购服务的时候)
+	
+	private Lock lock = new ZookeeperLock();
+	
 	@Override
 	public SeckillExecution executeSeckillByRedis(long seckillId, long userPhone, String md5)
 			throws SeckillException, RepeatKillException, SeckillCloseException {
-		//重复秒杀怎么判断？？？？？？
-		//redis减库存成功，发送消息失败怎么办？redis回滚吗？
-		//这个地方要加上分布式锁,redis减库存有可能失败，可能库存已经为0了，可能某一个userPhone重复秒杀等
-		redisDao.executeSeckillByRedis(seckillId, userPhone, md5);
+		
+		
+		lock.lock();
+		try {
+			//重复秒杀怎么判断？？？？？？
+			//redis减库存成功，发送消息失败怎么办？redis回滚吗？
+			//这个地方要加上分布式锁,redis减库存有可能失败，可能库存已经为0了，可能某一个userPhone重复秒杀等
+			redisDao.executeSeckillByRedis(seckillId, userPhone, md5);
+		} catch (Exception e) {
+			// TODO: handle exception
+		} finally {
+			lock.unlock();
+		}
 		
 		int number = redisDao.getSeckill(seckillId).getNumber();//最新的库存信息
 		
-		rabbitTemplate.send(new SuccessKilledMessage(body, messageProperties));
+	//	rabbitTemplate.send(new SuccessKilledMessage(body, messageProperties));
 		return null;
 	}
 
