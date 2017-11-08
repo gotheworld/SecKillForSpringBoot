@@ -210,7 +210,7 @@ public class SeckillServiceImpl implements SeckillService {
 	//2.使用jdk5 lock，syncnized
 	//3.SETNX 分布式锁(有多个机器同时运行 抢购服务的时候)
 	
-	private Lock lock = new ZookeeperLock();
+	private Lock lock = null;
 	
 	@Override
 	public SeckillExecution executeSeckillByRedis(long seckillId, long userPhone, String md5)

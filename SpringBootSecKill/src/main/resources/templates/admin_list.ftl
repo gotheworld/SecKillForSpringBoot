@@ -11,7 +11,7 @@
 		<div class="panel panel-default">
 		
 			<div class="panel-heading text-center">
-				<h2>秒杀列表</h2>
+				<h2>后台库存信息</h2>
 			</div>
 			<div class="panel-body">
 				<table class="table table-hover">
@@ -28,26 +28,42 @@
 					<tbody>
 						<#list list as sk>
                               <tr>
-                                      <td>${sk.name}</td>
-                                      <td>${sk.number}</td>
-                                      <td>${sk.startTime?datetime}</td>
-                                      <td>${sk.endTime?datetime}</td>
+                                      <td><input type=text value=${sk.name}></td>
+                                      <td><input type=text value=${sk.number}></td>
+                                      <td><input type=text value="${sk.startTime?datetime}"></td>
+                                      <td><input type=text value="${sk.endTime?datetime}"></td>
                                       <td>${sk.createTime?datetime}</td>
 
 									  <td>
 										  <a class="btn btn-info" href="http://localhost:8080/seckill/${sk.seckillId?c}/detail" target="_blank">
-											   详情
+											   保存
 										  </a>
 									  </td>
                      			</tr>
                         </#list>
 					</tbody>
 				</table>
-				<a class="btn btn-success" href="http://localhost:8080/seckill/admin/list" target="_blank">
-				    更新库存
-				</a>
 			</div>
 		</div>
+		  <form class="form-horizontal" role="form">
+			  <div class="form-group">
+			    <label for="firstname" class="col-sm-2 control-label">名字</label>
+			    <div class="col-sm-10">
+			      <input type="text" class="form-control" id="firstname" placeholder="请输入名字">
+			    </div>
+			  </div>
+			  <div class="form-group">
+			    <label for="lastname" class="col-sm-2 control-label">姓</label>
+			    <div class="col-sm-10">
+			      <input type="text" class="form-control" id="lastname" placeholder="请输入姓">
+			    </div>
+			  </div>
+			  <div class="form-group">
+			    <div class="col-sm-offset-2 col-sm-10">
+			      <button type="submit" class="btn btn-success">添加商品</button>
+			    </div>
+			  </div>
+        </form>
 	</div>
 
 	<!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->

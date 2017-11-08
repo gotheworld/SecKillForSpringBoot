@@ -11,6 +11,8 @@ import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.serialize.SerializableSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
 
 public class ZookeeperLock implements Lock {
 	private static Logger logger = LoggerFactory.getLogger(ZookeeperLock.class);

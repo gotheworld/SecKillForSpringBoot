@@ -56,6 +56,16 @@ public class SeckillController {
 		// list.jsp + model = ModelAndView
 		return "list";// WEB-INF/jsp/"list".jsp
 	}
+	
+	@RequestMapping(value = "/admin/list", method = RequestMethod.GET)
+	public String adminList(Model model) {
+		// 获取列表页
+		List<Seckill> list = seckillService.getSeckillList();
+		model.addAttribute("list", list);
+
+		return "admin_list";
+	}
+
 
 	/**
 	 URL:http://localhost:8080/seckill/1000/detail

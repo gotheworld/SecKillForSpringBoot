@@ -28,6 +28,9 @@ public class RedisUtil {
 
 	private RuntimeSchema<Seckill> schema = RuntimeSchema.createFrom(Seckill.class);
 
+	public RedisUtil(){
+		jedisPool = null;
+	}
 	public RedisUtil(String ip, int port) {
 		jedisPool = new JedisPool(ip, port);
 	}

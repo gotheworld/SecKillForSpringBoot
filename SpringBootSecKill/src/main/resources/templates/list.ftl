@@ -7,7 +7,9 @@
 <body>
 	<!-- 页面显示部分 -->
 	<div class="container">
+	
 		<div class="panel panel-default">
+		
 			<div class="panel-heading text-center">
 				<h2>秒杀列表</h2>
 			</div>
@@ -34,13 +36,16 @@
 
 									  <td>
 										  <a class="btn btn-info" href="http://localhost:8080/seckill/${sk.seckillId?c}/detail" target="_blank">
-											  link
+											   详情
 										  </a>
 									  </td>
                      			</tr>
                         </#list>
 					</tbody>
 				</table>
+				<a class="btn btn-success" href="http://localhost:8080/seckill/admin/list" target="_blank">
+				    更新库存
+				</a>
 			</div>
 		</div>
 	</div>
