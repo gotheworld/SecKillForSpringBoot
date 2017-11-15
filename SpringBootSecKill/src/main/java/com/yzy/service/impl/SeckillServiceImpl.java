@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 
+import com.rabbitmq.client.MessageProperties;
 import com.yzy.dao.SeckillDao;
 import com.yzy.dao.SuccessKilledDao;
 import com.yzy.dto.Exposer;
@@ -18,12 +19,14 @@ import com.yzy.exception.SeckillCloseException;
 import com.yzy.exception.SeckillException;
 import com.yzy.service.SeckillService;
 import com.yzy.utils.RedisUtil;
-import com.yzy.utils.SuccessKilledMessage;
 import com.yzy.utils.ZookeeperLock;
+import com.yzy.utils.mq.MessageSender;
+import com.yzy.utils.mq.SuccessKilledMessage;
 
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,11 +46,11 @@ public class SeckillServiceImpl implements SeckillService {
 	@Autowired
 	private SuccessKilledDao successKilledDao;
 
-//	@Autowired
-	private RedisUtil redisDao = new RedisUtil("127.0.0.1",6379);
+	@Autowired
+	private RedisUtil redisDao;
 	
 	@Autowired
-	private RabbitTemplate rabbitTemplate;
+	private MessageSender rabbitmqUtil ;
 
 	// md5盐值字符串，用于混淆MD5
 	private final String slat = "skdfjksjdf7787%^%^%^FSKJFK*(&&%^%&^8DF8^%^^*7hFJDHFJ";
@@ -228,10 +231,14 @@ public class SeckillServiceImpl implements SeckillService {
 		} finally {
 			lock.unlock();
 		}
-		
+		//发送订单消息给库存系统
 		int number = redisDao.getSeckill(seckillId).getNumber();//最新的库存信息
 		
-	//	rabbitTemplate.send(new SuccessKilledMessage(body, messageProperties));
+		SuccessKilledMessage successKilledMessage  = new SuccessKilledMessage(userPhone, seckillId, number);
+		MessageProperties messageProperties = new MessageProperties();
+		
+		//1.消息的幂等性，消息无论发送多少次都没事，如果做不到幂等性要做消息的去重
+	//	rabbitmqUtil.convertAndSend(successKilledMessage);
 		return null;
 	}
 

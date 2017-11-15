@@ -29,10 +29,7 @@ public class RedisUtil {
 	private RuntimeSchema<Seckill> schema = RuntimeSchema.createFrom(Seckill.class);
 
 	public RedisUtil(){
-		jedisPool = null;
-	}
-	public RedisUtil(String ip, int port) {
-		jedisPool = new JedisPool(ip, port);
+		jedisPool = new JedisPool("127.0.0.1",6379);
 	}
 
 	public Seckill getSeckill(long seckillId) {
