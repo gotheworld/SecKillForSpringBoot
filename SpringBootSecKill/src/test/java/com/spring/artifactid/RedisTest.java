@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.aop.ThrowsAdvice;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -20,5 +21,10 @@ public class RedisTest {
 	    @Test
 	    public void get() throws Exception {
 	   
+	    }
+	    
+	    @Test
+	    public void testRedis() throws Exception{
+	    	
 	    }
 }

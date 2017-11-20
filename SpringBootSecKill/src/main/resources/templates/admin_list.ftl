@@ -22,7 +22,7 @@
 							<th>开始时间</th>
 							<th>结束时间</th>
 							<th>创建时间</th>
-							<th>详情页</th>
+							<th>操作</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -47,20 +47,32 @@
 		</div>
 		  <form class="form-horizontal" role="form">
 			  <div class="form-group">
-			    <label for="firstname" class="col-sm-2 control-label">名字</label>
+			    <label for="firstname" class="col-sm-2 control-label">名称</label>
 			    <div class="col-sm-10">
-			      <input type="text" class="form-control" id="firstname" placeholder="请输入名字">
+			      <input type="text" class="form-control" id="firstname" placeholder="请输入名称">
 			    </div>
 			  </div>
 			  <div class="form-group">
-			    <label for="lastname" class="col-sm-2 control-label">姓</label>
+			    <label for="lastname" class="col-sm-2 control-label">库存</label>
 			    <div class="col-sm-10">
-			      <input type="text" class="form-control" id="lastname" placeholder="请输入姓">
+			      <input type="text" class="form-control" id="lastname" placeholder="请输入库存">
+			    </div>
+			  </div>
+			   <div class="form-group">
+			    <label for="lastname" class="col-sm-2 control-label">开始时间</label>
+			    <div class="col-sm-10">
+			      <input type="text" class="form-control" id="lastname" placeholder="请输入开始时间">
+			    </div>
+			  </div>
+			   <div class="form-group">
+			    <label for="lastname" class="col-sm-2 control-label">结束时间</label>
+			    <div class="col-sm-10">
+			      <input type="text" class="form-control" id="lastname" placeholder="请输入结束时间">
 			    </div>
 			  </div>
 			  <div class="form-group">
 			    <div class="col-sm-offset-2 col-sm-10">
-			      <button type="submit" class="btn btn-success">添加商品</button>
+			      <button type="submit" class="btn btn-success">添加秒杀信息</button>
 			    </div>
 			  </div>
         </form>

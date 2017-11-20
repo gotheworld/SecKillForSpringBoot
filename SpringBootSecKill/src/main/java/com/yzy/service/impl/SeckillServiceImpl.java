@@ -193,10 +193,9 @@ public class SeckillServiceImpl implements SeckillService {
 	 * 
 	 * 架构流程：
 	 *  0.定时任务,秒杀开始之前同步mysql库存信息到redis
-	 *  1.redis中减库存
-		2.把秒杀的结果写入mq 
-		3.消费者线程去消费mq中的数据，更新到mysql的秒杀结果表中
-		4.redis中的库存信息写会mysql
+	 *  1.redis中减库存,并缓存秒杀记录
+		2.把秒杀的记录和库存信息写入mq 
+		3.消费者线程去消费mq中的数据，更新到mysql的秒杀结果表中，库存信息写会mysql
 		 
 	 * 可能遇到的问题：
 	 * 1.redis减库存的分布式锁【zk分布式锁】
@@ -213,33 +212,90 @@ public class SeckillServiceImpl implements SeckillService {
 	//2.使用jdk5 lock，syncnized
 	//3.SETNX 分布式锁(有多个机器同时运行 抢购服务的时候)
 	
-	private Lock lock = null;
-	
 	@Override
 	public SeckillExecution executeSeckillByRedis(long seckillId, long userPhone, String md5)
 			throws SeckillException, RepeatKillException, SeckillCloseException {
 		
+		if (md5 == null || !md5.equals(getMD5(seckillId))) {
+			throw new SeckillException("seckill data rewrite");
+		}
+		
+		Date now = new Date();
+		Seckill seckill = redisDao.getSeckill(seckillId);
+		//如果缓存超时了怎么办？seckill是空的了。。。能否每一个商品设置一个超时时间,秒杀结束前不会缓存过期？
+		
+		if(seckill == null){
+			seckill = seckillDao.queryById(seckillId);
+			redisDao.putSeckill(seckill);
+		}
+		
+		if(seckill.getStartTime().after(now) || seckill.getEndTime().before(now)){
+			//秒杀时间段已经过了或者还没有开始
+			return new SeckillExecution(seckillId, SeckillStateEnum.END, null);
+		}
+	//	SuccessKilled successKilled = successKilledDao.queryByIdWithSeckill(seckillId, userPhone);
+//		if(successKilled != null){
+			// 重复秒杀
+		//	throw new RepeatKillException("seckill repeated");
+	//	}
+		
+		//秒杀结果的缓存是不是要设置为永远不能过期、保证为null表示没有重复秒杀而不是缓存过期、
+		SuccessKilled successKilled = redisDao.getSuccessSeckill(userPhone, seckillId);
+		if(successKilled != null){
+			// 重复秒杀
+			throw new RepeatKillException("seckill repeated");
+		}else{
+			successKilled = new SuccessKilled();
+			successKilled.setSeckillId(seckillId);
+			successKilled.setUserPhone(userPhone);
+		}
+
+		//如果两个线程同时执行秒杀方法，这两个线程操作的是不同的商品,从业务上讲应该是可以同时进行的，
+		//每个商品一把锁
+        Lock lock = new ZookeeperLock("lock-seckill" + seckillId);
 		
 		lock.lock();
 		try {
-			//重复秒杀怎么判断？？？？？？
 			//redis减库存成功，发送消息失败怎么办？redis回滚吗？
 			//这个地方要加上分布式锁,redis减库存有可能失败，可能库存已经为0了，可能某一个userPhone重复秒杀等
-			redisDao.executeSeckillByRedis(seckillId, userPhone, md5);
+			int num = seckill.getNumber();
+			if(num -1 >= 0 ){
+				num = num - 1;
+				seckill.setNumber(num);//减库存
+				redisDao.putSeckill(seckill);
+				redisDao.putSuccessSeckill(successKilled);
+				
+				sendSuccessSeckillMessage(userPhone,seckillId,num);
+				
+				return new SeckillExecution(seckillId, SeckillStateEnum.SUCCESS, null);
+			}else{
+				return new SeckillExecution(seckillId, SeckillStateEnum.EMPTY, null);
+				
+			}
 		} catch (Exception e) {
-			// TODO: handle exception
+		   e.printStackTrace();
 		} finally {
 			lock.unlock();
 		}
-		//发送订单消息给库存系统
-		int number = redisDao.getSeckill(seckillId).getNumber();//最新的库存信息
-		
-		SuccessKilledMessage successKilledMessage  = new SuccessKilledMessage(userPhone, seckillId, number);
-		MessageProperties messageProperties = new MessageProperties();
-		
-		//1.消息的幂等性，消息无论发送多少次都没事，如果做不到幂等性要做消息的去重
-	//	rabbitmqUtil.convertAndSend(successKilledMessage);
 		return null;
+	}
+
+	/**
+	 * 
+	 * @param userPhone  用户手机号码
+	 * @param seckillId  产品ID
+	 * @param num        剩余库存
+	 */
+	private void sendSuccessSeckillMessage(long userPhone, long seckillId, int num) {
+		//发送订单消息给库存系统
+				int number = redisDao.getSeckill(seckillId).getNumber();//最新的库存信息
+				
+				SuccessKilledMessage successKilledMessage  = new SuccessKilledMessage(userPhone, seckillId, number);
+				MessageProperties messageProperties = new MessageProperties();
+				
+				//1.消息的幂等性，消息无论发送多少次都没事，如果做不到幂等性要做消息的去重
+			//	rabbitmqUtil.convertAndSend(successKilledMessage);
+				
 	}
 
 }

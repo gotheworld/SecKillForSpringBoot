@@ -51,11 +51,12 @@ public class SeckillController {
 		List<Seckill> list = seckillService.getSeckillList();
 		model.addAttribute("list", list);
 
-		System.out.println("list="+list.get(1));
+		System.out.println("==="+list.get(1));
 
 		// list.jsp + model = ModelAndView
 		return "list";// WEB-INF/jsp/"list".jsp
 	}
+
 	
 	@RequestMapping(value = "/admin/list", method = RequestMethod.GET)
 	public String adminList(Model model) {

@@ -13,12 +13,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-@Component
 public class ZookeeperLock implements Lock {
 	private static Logger logger = LoggerFactory.getLogger(ZookeeperLock.class);
 
 	private static final String ZOOKEEPER_IP_PORT = "127.0.0.1:2181";
-	private static final String LOCK_PATH = "/LOCK";
+	private static String LOCK_PATH = "/LOCK/";
 
 	private ZkClient client = new ZkClient(ZOOKEEPER_IP_PORT, 1000, 1000, new SerializableSerializer());
 
@@ -28,7 +27,10 @@ public class ZookeeperLock implements Lock {
 	private String currentPath;// 当前请求的节点
 
 	// 判断有没有LOCK目录，没有则创建
-	public ZookeeperLock() {
+	public ZookeeperLock(String lockPath) {
+		
+		LOCK_PATH = LOCK_PATH + lockPath;
+		
 		if (!this.client.exists(LOCK_PATH)) {
 			this.client.createPersistent(LOCK_PATH);
 		}
@@ -96,7 +98,6 @@ public class ZookeeperLock implements Lock {
 		this.client.unsubscribeDataChanges(beforePath, listener);
 	}
 
-	// ==========================================
 	public void lockInterruptibly() throws InterruptedException {
 
 	}
