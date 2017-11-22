@@ -12,6 +12,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;  
 import org.springframework.messaging.handler.annotation.Payload;  
 
+
+		/**
+		 * 当队列中有数据的时候自动执行，不是等秒杀活动结束才执行
+		 * 
+		 * 生产者确认，消费者确认，持久化三大法宝，保证redis中扣减库存之后订单一定要落地(消息一定要被消费)
+		 * @return
+		 */
+		
+		//1.redis中的库存信息更新mysql
+		
 @Configuration  
 @RabbitListener(queues = AmqpConfig.FOO_QUEUE)  
 public class MessageListener {  
@@ -38,7 +48,10 @@ public class MessageListener {
   @Bean  
   public Binding binding() {  
       /** 将队列绑定到交换机 */  
-      return BindingBuilder.bind(fooQueue()).to(defaultExchange()).with(AmqpConfig.FOO_ROUTINGKEY);  
+      return BindingBuilder
+    		  .bind(fooQueue())
+    		  .to(defaultExchange())
+    		  .with(AmqpConfig.FOO_ROUTINGKEY);  
   }  
 
   @RabbitHandler  

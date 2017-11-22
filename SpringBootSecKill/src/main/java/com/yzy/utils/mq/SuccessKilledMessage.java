@@ -1,9 +1,11 @@
 package com.yzy.utils.mq;
 
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
+import java.io.Serializable;
 
-public class SuccessKilledMessage {
+
+public class SuccessKilledMessage implements Serializable {
+	
+	
 	public SuccessKilledMessage(long userPhone, long seckillId,
 			int number) {
 		this.userPhone = userPhone;
