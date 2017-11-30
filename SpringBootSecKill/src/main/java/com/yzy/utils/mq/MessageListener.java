@@ -11,6 +11,7 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;  
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.ChannelAwareMessageListener;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;  
 import org.springframework.context.annotation.Configuration;  
 import org.springframework.messaging.handler.annotation.Payload;
@@ -19,7 +20,8 @@ import org.springframework.stereotype.Component;
 import com.dyuproject.protostuff.ProtostuffIOUtil;
 import com.dyuproject.protostuff.runtime.RuntimeSchema;
 import com.rabbitmq.client.AMQP.Channel;
-import com.yzy.entity.Seckill;  
+import com.yzy.entity.Seckill;
+import com.yzy.service.SeckillService;  
 
 
 		/**
@@ -37,7 +39,11 @@ import com.yzy.entity.Seckill;
 @Component
 public class MessageListener implements ChannelAwareMessageListener{  
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MessageListener.class);  
+  private static final Logger LOGGER = LoggerFactory.getLogger(MessageListener.class);
+  
+  @Autowired
+  private SeckillService seckillService;
+  
 
   /*@RabbitHandler  
   public void process(@Payload SuccessKilledMessage foo) {  
@@ -52,6 +58,9 @@ public class MessageListener implements ChannelAwareMessageListener{
 		//如果不进行ack的话，消息会一直持久化在队列里面
 		//如果该消费者拒绝了某几个消息，rabbitmq会把他投递给其他消费者
 		//多个消费者之间默认是轮询的方式分配给多个消费者
+		
+		
+		
 		channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
 		
 		
@@ -62,5 +71,11 @@ public class MessageListener implements ChannelAwareMessageListener{
 		ProtostuffIOUtil.mergeFrom(msgBytes, sm, schema);
 		
 		LOGGER.info("onMessage==============+++++++=: "  + sm.getNumber());
+		
+       //0.消息去重   由于订单表 电话号码 和 商品ID是联合主键，所以可以暂时不做去重
+		//1.减库存
+		//2.insert订单表
+				
+	   seckillService.executeSeckill(sm.getSeckillId(), sm.getUserPhone(), sm.getMd5());
 	}  
 }  

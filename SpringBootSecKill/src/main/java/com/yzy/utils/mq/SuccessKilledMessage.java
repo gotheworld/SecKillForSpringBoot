@@ -31,12 +31,16 @@ public class SuccessKilledMessage  {
 	 */
 	private int number;
 	
+	private String md5;
+	
 
-	public SuccessKilledMessage(long userPhone, long seckillId, int number) {
+
+	public SuccessKilledMessage(long userPhone, long seckillId, int number, String md5) {
     
 		this.userPhone = userPhone;
 		this.seckillId = seckillId;
 		this.number = number;
+		this.md5 = md5;
 	}
 
 	public long getUserPhone() {
@@ -68,6 +72,13 @@ public class SuccessKilledMessage  {
 	}
 	
 	
-	
+
+	public String getMd5() {
+		return md5;
+	}
+
+	public void setMd5(String md5) {
+		this.md5 = md5;
+	}
 	
 }

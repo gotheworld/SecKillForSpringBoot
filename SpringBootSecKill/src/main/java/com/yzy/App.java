@@ -17,12 +17,10 @@ import com.yzy.utils.mq.MessageSender;
 @EnableScheduling
 public class App {
 	
-	@Autowired
-	private static RedisUtil mRedisUtil;
 	
     public static void main(String[] args) throws Exception {
 
-    	mRedisUtil.syncSeckillListFromMysql2Redis();
+    	
     	
         SpringApplication.run(App.class, args);
 

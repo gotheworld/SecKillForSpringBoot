@@ -33,7 +33,7 @@ public class RedisTest {
 	    @Test
 	    public void testRabbitmq() throws Exception {
 	    	
-	    	SuccessKilledMessage sMessage = new  SuccessKilledMessage(334, 333, 999);
+	    	SuccessKilledMessage sMessage = new  SuccessKilledMessage(334, 333, 999,"");
 	    	RuntimeSchema<SuccessKilledMessage> schema = RuntimeSchema.createFrom(SuccessKilledMessage.class);
 	    	byte[] bytes = ProtostuffIOUtil.toByteArray(sMessage, schema,
 					LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE));

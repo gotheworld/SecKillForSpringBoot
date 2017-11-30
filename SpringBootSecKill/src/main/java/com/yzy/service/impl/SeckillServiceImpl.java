@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 
+import com.dyuproject.protostuff.LinkedBuffer;
+import com.dyuproject.protostuff.ProtostuffIOUtil;
+import com.dyuproject.protostuff.runtime.RuntimeSchema;
 import com.rabbitmq.client.MessageProperties;
 import com.yzy.dao.SeckillDao;
 import com.yzy.dao.SuccessKilledDao;
@@ -39,6 +42,9 @@ import org.springframework.util.DigestUtils;
 public class SeckillServiceImpl implements SeckillService {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
+
+	final int count = 1; //购买数量
 	
     @Autowired
     MessageSender messageSender;
@@ -237,23 +243,12 @@ public class SeckillServiceImpl implements SeckillService {
 			//秒杀时间段已经过了或者还没有开始
 			return new SeckillExecution(seckillId, SeckillStateEnum.END, null);
 		}
-	//	SuccessKilled successKilled = successKilledDao.queryByIdWithSeckill(seckillId, userPhone);
-//		if(successKilled != null){
-			// 重复秒杀
-		//	throw new RepeatKillException("seckill repeated");
-	//	}
-		
-		//秒杀结果的缓存是不是要设置为永远不能过期、保证为null表示没有重复秒杀而不是缓存过期、
-		SuccessKilled successKilled = redisDao.getSuccessSeckill(userPhone, seckillId);
+		SuccessKilled successKilled = successKilledDao.queryByIdWithSeckill(seckillId, userPhone);
 		if(successKilled != null){
-			// 重复秒杀
+		//	 重复秒杀
 			throw new RepeatKillException("seckill repeated");
-		}else{
-			successKilled = new SuccessKilled();
-			successKilled.setSeckillId(seckillId);
-			successKilled.setUserPhone(userPhone);
 		}
-
+	
 		//如果两个线程同时执行秒杀方法，这两个线程操作的是不同的商品,从业务上讲应该是可以同时进行的，
 		//每个商品一把锁
         Lock lock = new ZookeeperLock("lock-seckill" + seckillId);
@@ -263,16 +258,22 @@ public class SeckillServiceImpl implements SeckillService {
 			//redis减库存成功，发送消息失败怎么办？redis回滚吗？
 			//这个地方要加上分布式锁,redis减库存有可能失败，可能库存已经为0了，可能某一个userPhone重复秒杀等
 			int num = seckill.getNumber();
-			if(num -1 >= 0 ){
-				num = num - 1;
+			if(num -count >= 0 ){
+				num = num - count;
 				seckill.setNumber(num);//减库存
 				redisDao.putSeckill(seckill);//更新缓存中的库存信息
-				redisDao.putSuccessSeckill(successKilled);//将订单信息写入缓存
+			//暂时没有必要缓存订单信息	
+			//	redisDao.putSuccessSeckill(successKilled);//将订单信息写入缓存
 				
-				SuccessKilledMessage s  = new SuccessKilledMessage(userPhone, seckillId, 1);
-				//messageSender.send(s);
+				//消息的一致性问题： 如果消息投递失败了呢？redis中的库存已经扣减了...
 				
-				
+				SuccessKilledMessage sMessage  = new SuccessKilledMessage(userPhone, seckillId, count, md5);
+		    	RuntimeSchema<SuccessKilledMessage> schema = RuntimeSchema.createFrom(SuccessKilledMessage.class);
+		    	byte[] bytes = ProtostuffIOUtil.toByteArray(sMessage, schema,
+						LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE));
+		    	
+				messageSender.send(bytes);
+					
 				return new SeckillExecution(seckillId, SeckillStateEnum.SUCCESS, null);
 			}else{
 				return new SeckillExecution(seckillId, SeckillStateEnum.EMPTY, null);

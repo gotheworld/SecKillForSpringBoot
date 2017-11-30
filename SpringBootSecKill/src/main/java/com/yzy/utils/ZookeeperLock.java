@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 public class ZookeeperLock implements Lock {
 	private static Logger logger = LoggerFactory.getLogger(ZookeeperLock.class);
 
-	private static final String ZOOKEEPER_IP_PORT = "127.0.0.1:2181";
+	private static final String ZOOKEEPER_IP_PORT = "192.168.0.178:2181";
 	private static String LOCK_PATH = "/LOCK/";
 
 	private ZkClient client = new ZkClient(ZOOKEEPER_IP_PORT, 1000, 1000, new SerializableSerializer());

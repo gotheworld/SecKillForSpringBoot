@@ -73,7 +73,16 @@ public interface SeckillService {
 	SeckillExecution executeSeckillProcedure(long seckillId, long userPhone, String md5)
 			throws SeckillException, RepeatKillException, SeckillCloseException;
 	
-	
+	/**
+	 * 在redis中进行库存的扣减，然后发送消息给rabbitmq，在消费者端进行最终的订单落地mysql
+	 * @param seckillId
+	 * @param userPhone
+	 * @param md5
+	 * @return
+	 * @throws SeckillException
+	 * @throws RepeatKillException
+	 * @throws SeckillCloseException
+	 */
 	SeckillExecution executeSeckillByRedis(long seckillId, long userPhone, String md5)
 			throws SeckillException, RepeatKillException, SeckillCloseException;
 	
