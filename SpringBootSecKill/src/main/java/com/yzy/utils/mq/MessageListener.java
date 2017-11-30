@@ -1,16 +1,25 @@
 package com.yzy.utils.mq;
  
+import org.apache.commons.collections.functors.TruePredicate;
 import org.slf4j.Logger;  
 import org.slf4j.LoggerFactory;  
 import org.springframework.amqp.core.Binding;  
 import org.springframework.amqp.core.BindingBuilder;  
-import org.springframework.amqp.core.DirectExchange;  
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.Queue;  
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;  
-import org.springframework.amqp.rabbit.annotation.RabbitListener;  
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.ChannelAwareMessageListener;
 import org.springframework.context.annotation.Bean;  
 import org.springframework.context.annotation.Configuration;  
-import org.springframework.messaging.handler.annotation.Payload;  
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.stereotype.Component;
+
+import com.dyuproject.protostuff.ProtostuffIOUtil;
+import com.dyuproject.protostuff.runtime.RuntimeSchema;
+import com.rabbitmq.client.AMQP.Channel;
+import com.yzy.entity.Seckill;  
 
 
 		/**
@@ -22,40 +31,36 @@ import org.springframework.messaging.handler.annotation.Payload;
 		
 		//1.redis中的库存信息更新mysql
 		
-@Configuration  
-@RabbitListener(queues = AmqpConfig.FOO_QUEUE)  
-public class MessageListener {  
+
+//http://blog.csdn.net/zh350229319/article/details/
+
+@Component
+public class MessageListener implements ChannelAwareMessageListener{  
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MessageListener.class);  
 
-  /** 设置交换机类型  */  
-  @Bean  
-  public DirectExchange defaultExchange() {  
-      /** 
-       * DirectExchange:按照routingkey分发到指定队列 
-       * TopicExchange:多关键字匹配 
-       * FanoutExchange: 将消息分发到所有的绑定队列，无routingkey的概念 
-       * HeadersExchange ：通过添加属性key-value匹配 
-       */  
-      return new DirectExchange(AmqpConfig.FOO_EXCHANGE);  
-  }  
+  /*@RabbitHandler  
+  public void process(@Payload SuccessKilledMessage foo) {  
+      LOGGER.info("Listener: " + foo.getUserPhone());  
+     //如何进行消费的应答，保证没有被应答的消息可以投递给其他的消费者
+  }*/
 
-  @Bean  
-  public Queue fooQueue() {  
-      return new Queue(AmqpConfig.FOO_QUEUE);  
-  }  
-
-  @Bean  
-  public Binding binding() {  
-      /** 将队列绑定到交换机 */  
-      return BindingBuilder
-    		  .bind(fooQueue())
-    		  .to(defaultExchange())
-    		  .with(AmqpConfig.FOO_ROUTINGKEY);  
-  }  
-
-  @RabbitHandler  
-  public void process(@Payload String foo) {  
-      LOGGER.info("Listener: " + foo);  
-  }  
+	@Override
+	public void onMessage(Message message, com.rabbitmq.client.Channel channel) throws Exception {
+		// TODO Auto-generated method stub
+      
+		//如果不进行ack的话，消息会一直持久化在队列里面
+		//如果该消费者拒绝了某几个消息，rabbitmq会把他投递给其他消费者
+		//多个消费者之间默认是轮询的方式分配给多个消费者
+		channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+		
+		
+		byte[] msgBytes = message.getBody();
+		RuntimeSchema<SuccessKilledMessage> schema = RuntimeSchema.createFrom(SuccessKilledMessage.class);
+		  
+		SuccessKilledMessage sm = schema.newMessage();
+		ProtostuffIOUtil.mergeFrom(msgBytes, sm, schema);
+		
+		LOGGER.info("onMessage==============+++++++=: "  + sm.getNumber());
+	}  
 }  

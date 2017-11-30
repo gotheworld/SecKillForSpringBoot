@@ -24,6 +24,7 @@ import com.yzy.utils.mq.MessageSender;
 import com.yzy.utils.mq.SuccessKilledMessage;
 
 import org.apache.commons.collections.MapUtils;
+import org.omg.CORBA.PRIVATE_MEMBER;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -38,6 +39,9 @@ import org.springframework.util.DigestUtils;
 public class SeckillServiceImpl implements SeckillService {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
+    @Autowired
+    MessageSender messageSender;
 
 	// 注入Service依赖
 	@Autowired
@@ -262,10 +266,12 @@ public class SeckillServiceImpl implements SeckillService {
 			if(num -1 >= 0 ){
 				num = num - 1;
 				seckill.setNumber(num);//减库存
-				redisDao.putSeckill(seckill);
-				redisDao.putSuccessSeckill(successKilled);
+				redisDao.putSeckill(seckill);//更新缓存中的库存信息
+				redisDao.putSuccessSeckill(successKilled);//将订单信息写入缓存
 				
-				sendSuccessSeckillMessage(userPhone,seckillId,num);
+				SuccessKilledMessage s  = new SuccessKilledMessage(userPhone, seckillId, 1);
+				//messageSender.send(s);
+				
 				
 				return new SeckillExecution(seckillId, SeckillStateEnum.SUCCESS, null);
 			}else{
@@ -278,24 +284,6 @@ public class SeckillServiceImpl implements SeckillService {
 			lock.unlock();
 		}
 		return null;
-	}
-
-	/**
-	 * 
-	 * @param userPhone  用户手机号码
-	 * @param seckillId  产品ID
-	 * @param num        剩余库存
-	 */
-	private void sendSuccessSeckillMessage(long userPhone, long seckillId, int num) {
-		//发送订单消息给库存系统
-				int number = redisDao.getSeckill(seckillId).getNumber();//最新的库存信息
-				
-				SuccessKilledMessage successKilledMessage  = new SuccessKilledMessage(userPhone, seckillId, number);
-				MessageProperties messageProperties = new MessageProperties();
-				
-				//1.消息的幂等性，消息无论发送多少次都没事，如果做不到幂等性要做消息的去重
-			//	rabbitmqUtil.convertAndSend(successKilledMessage);
-				
 	}
 
 }

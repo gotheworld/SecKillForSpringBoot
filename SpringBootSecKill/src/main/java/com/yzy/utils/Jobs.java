@@ -24,13 +24,13 @@ public class Jobs {
         System.out.println(" >>fixedDelay执行....");
     }*/
 
-    @Scheduled(fixedRate=ONE_Minute)
-    public void fixedRateJob(){
-        System.out.println(" >>fixedRate执行....秒杀开始之前把数据库中的商品库存信息写入redis");
+    //@Scheduled(fixedRate=ONE_Minute)
+   // public void fixedRateJob(){
+      //  System.out.println(" >>fixedRate执行....秒杀开始之前把数据库中的商品库存信息写入redis");
         
         
-       mRedisUtil.syncSeckillListFromMysql2Redis();
-    }
+    //   mRedisUtil.syncSeckillListFromMysql2Redis();
+  //  }
 	//在秒杀开始前定时任务把db中的库存信息写入redis
 //  0 5 3 * * ?     每天16点25分执行
  //   @Scheduled(cron="0 25 16 * * ?")

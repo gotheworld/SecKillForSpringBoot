@@ -14,8 +14,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import com.dyuproject.protostuff.LinkedBuffer;
+import com.dyuproject.protostuff.ProtostuffIOUtil;
+import com.dyuproject.protostuff.runtime.RuntimeSchema;
 import com.yzy.App;
+import com.yzy.entity.Seckill;
 import com.yzy.utils.mq.MessageSender;
+import com.yzy.utils.mq.SuccessKilledMessage;
+
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = App.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -26,7 +32,13 @@ public class RedisTest {
 	    MessageSender messageSender;
 	    @Test
 	    public void testRabbitmq() throws Exception {
-	        messageSender.send("hello yzy");
+	    	
+	    	SuccessKilledMessage sMessage = new  SuccessKilledMessage(334, 333, 999);
+	    	RuntimeSchema<SuccessKilledMessage> schema = RuntimeSchema.createFrom(SuccessKilledMessage.class);
+	    	byte[] bytes = ProtostuffIOUtil.toByteArray(sMessage, schema,
+					LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE));
+	    	
+	        messageSender.send(bytes);
 	    }
 	    
 	    @Test
