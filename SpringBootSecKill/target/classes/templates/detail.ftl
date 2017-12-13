@@ -6,7 +6,7 @@
 </head>
 <body>
     <!--  隐藏字段,seckill.js  URL里面会使用这个值-->
-    <input type="hidden" id="basePath" value="http://localhost:8080/" />
+    <input type="hidden" id="basePath" value="${basePath}" />
 
 	<div class="container">
 		<div class="panel panel-default text-center">
@@ -63,7 +63,7 @@
 
 
     <!--  spirng boot 如何引用自己写的js文件???
-    <script src="http://localhost:8080/seckill/resources/js/seckill.js"  type="text/javascript"></script>
+    <script src="${basePath}/seckill/resources/js/seckill.js"  type="text/javascript"></script>
     -->
 
 	<script type="text/javascript">
@@ -76,13 +76,13 @@
                     return $('#basePath').val();
                 },
                 now : function() {
-                    return seckill.URL.basePath() + 'seckill/time/now';
+                    return seckill.URL.basePath() + '/seckill/time/now';
                 },
                 exposer : function(seckillId) {
-                    return seckill.URL.basePath() + 'seckill/' + seckillId + '/exposer';
+                    return seckill.URL.basePath() + '/seckill/' + seckillId + '/exposer';
                 },
                 execution : function(seckillId, md5) {
-                    return seckill.URL.basePath() + 'seckill/' + seckillId + '/' + md5 + '/execution';
+                    return seckill.URL.basePath() + '/seckill/' + seckillId + '/' + md5 + '/execution';
                 }
             },
             // 处理秒杀逻辑
@@ -201,6 +201,7 @@
                     var startTime = params['startTime'];
                     var endTime = params['endTime'];
                     var seckillId = params['seckillId'];
+                    
                     $.get(seckill.URL.now(), {}, function(result) {
                         if (result && result['success']) {
                             var nowTime = result['data'];

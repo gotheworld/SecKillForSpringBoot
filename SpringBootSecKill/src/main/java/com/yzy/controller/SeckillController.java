@@ -3,6 +3,8 @@ package com.yzy.controller;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.yzy.dto.Exposer;
 import com.yzy.dto.SeckillExecution;
 import com.yzy.dto.SeckillResult;
@@ -30,6 +32,9 @@ public class SeckillController {
 
 	@Autowired
 	private SeckillService seckillService;
+	
+	@Autowired
+	private HttpServletRequest request;
 
 	/**
 	   URL:http://localhost:8080/seckill/list
@@ -50,9 +55,12 @@ public class SeckillController {
 		// 获取列表页
 		List<Seckill> list = seckillService.getSeckillList();
 		model.addAttribute("list", list);
-
-		System.out.println("==="+list.get(1));
-
+		String basePath = request.getScheme() + "://" + request.getServerName() + ":" 
+	            + request.getServerPort();
+	         //   + request.getServletPath()
+	         //   + (request.getQueryString() != null ?  "?" + request.getQueryString() : "");
+              
+        model.addAttribute("basePath", basePath);
 		// list.jsp + model = ModelAndView
 		return "list";// WEB-INF/jsp/"list".jsp
 	}
@@ -62,6 +70,12 @@ public class SeckillController {
 	public String adminList(Model model) {
 		// 获取列表页
 		List<Seckill> list = seckillService.getSeckillList();
+		String basePath = request.getScheme() + "://" + request.getServerName() + ":" 
+	            + request.getServerPort();
+	         //   + request.getServletPath()
+	         //   + (request.getQueryString() != null ?  "?" + request.getQueryString() : "");
+              
+        model.addAttribute("basePath", basePath);
 		model.addAttribute("list", list);
 
 		return "admin_list";
@@ -80,6 +94,13 @@ public class SeckillController {
 		if (seckill == null) {
 			return "forward:/seckill/list";
 		}
+		
+		String basePath = request.getScheme() + "://" + request.getServerName() + ":" 
+				            + request.getServerPort();
+				         //   + request.getServletPath()
+				         //   + (request.getQueryString() != null ?  "?" + request.getQueryString() : "");
+		                  
+		model.addAttribute("basePath", basePath);
 		model.addAttribute("seckill", seckill);
 		return "detail";
 	}

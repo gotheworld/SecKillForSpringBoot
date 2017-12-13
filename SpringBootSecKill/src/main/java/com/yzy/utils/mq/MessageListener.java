@@ -60,7 +60,7 @@ public class MessageListener implements ChannelAwareMessageListener{
 		//多个消费者之间默认是轮询的方式分配给多个消费者
 		
 		
-		
+		//消费者手动确认，如果没有得到确认的话消息会一直存在于mq中
 		channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
 		
 		

@@ -35,7 +35,8 @@ public class MessageSender implements RabbitTemplate.ConfirmCallback , RabbitTem
         this.rabbitTemplate.convertAndSend(AmqpConfig.FOO_EXCHANGE, AmqpConfig.FOO_ROUTINGKEY, msg, correlationData);  
     }  
     
-    /** 回调方法 */  
+    
+    /** 发送者确认回调方法 */  
     @Override  
     public void confirm(CorrelationData correlationData, boolean ack, String cause) {  
         LOGGER.info("confirm: " + correlationData.getId() + " ack="+ack);

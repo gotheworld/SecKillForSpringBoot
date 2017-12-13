@@ -35,7 +35,7 @@
                                       <td>${sk.createTime?datetime}</td>
 
 									  <td>
-										  <a class="btn btn-info" href="http://localhost:8080/seckill/${sk.seckillId?c}/detail" target="_blank">
+										  <a class="btn btn-info" href="${basePath}/seckill/${sk.seckillId?c}/detail" target="_blank">
 											   保存
 										  </a>
 									  </td>

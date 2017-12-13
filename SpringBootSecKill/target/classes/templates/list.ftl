@@ -35,7 +35,7 @@
                                       <td>${sk.createTime?datetime}</td>
 
 									  <td>
-										  <a class="btn btn-info" href="http://localhost:8080/seckill/${sk.seckillId?c}/detail" target="_blank">
+										  <a class="btn btn-info" href="${basePath}/seckill/${sk.seckillId?c}/detail" target="_blank">
 											   详情
 										  </a>
 									  </td>
@@ -43,7 +43,7 @@
                         </#list>
 					</tbody>
 				</table>
-				<a class="btn btn-success" href="http://localhost:8080/seckill/admin/list" target="_blank">
+				<a class="btn btn-success" href="${basePath}/seckill/admin/list" target="_blank">
 				    更新库存
 				</a>
 			</div>
